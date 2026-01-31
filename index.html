@@ -104,7 +104,7 @@
                 };
 
                 try {
-                    // ใช้ mode: 'no-cors' สำหรับการส่งข้อมูลไปยัง Google Apps Script
+                    // 1. ส่งข้อมูลไปยัง Google Apps Script
                     await fetch(GAS_URL, {
                         method: 'POST',
                         mode: 'no-cors', 
@@ -112,7 +112,29 @@
                         body: JSON.stringify(payload)
                     });
                     
-                    // เนื่องจาก no-cors ไม่สามารถอ่านค่า response ได้ แต่ถ้าไม่ throw error แสดงว่าส่งสำเร็จ
+                    // 2. ส่งข้อความสรุปกลับเข้าไปใน LINE Chat
+                    if (liff.isInClient()) {
+                        const summaryMessage = 
+                            `📊 สรุปการเบิกค่าเดินทาง\n` +
+                            `━━━━━━━━━━━━━━\n` +
+                            `👤 ผู้เบิก: ${payload.requester_name}\n` +
+                            `📅 วันที่: ${payload.request_date}\n` +
+                            `📍 Site งาน: ${payload.site_name}\n` +
+                            `📝 รายละเอียด: ${payload.travel_details}\n` +
+                            `🚗 ระยะทาง: ${payload.distance_km} กม.\n` +
+                            `🛣️ ค่าทางด่วน: ${Number(payload.toll_fee).toLocaleString()} ฿\n` +
+                            `🅿️ ค่าที่จอดรถ: ${Number(payload.parking_fee).toLocaleString()} ฿\n` +
+                            `━━━━━━━━━━━━━━\n` +
+                            `💰 รวมยอดสุทธิ: ${payload.total_amount.toLocaleString()} ฿`;
+
+                        await liff.sendMessages([
+                            {
+                                type: 'text',
+                                text: summaryMessage
+                            }
+                        ]);
+                    }
+                    
                     setLastSummary(payload);
                     setIsSuccess(true);
                 } catch (err) {
@@ -131,7 +153,7 @@
                                 <Icons.Check className="w-10 h-10" />
                             </div>
                             <h2 className="text-xl font-bold text-slate-800 mb-1">บันทึกสำเร็จ!</h2>
-                            <p className="text-slate-500 text-xs mb-4">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
+                            <p className="text-slate-500 text-xs mb-4">ข้อมูลถูกส่งเข้าระบบและแชท LINE เรียบร้อยแล้ว</p>
                             
                             <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-2 mb-5">
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">ข้อมูลการเบิก</p>
