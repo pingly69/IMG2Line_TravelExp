@@ -14,6 +14,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -23,14 +25,15 @@
         const { useState, useEffect } = React;
 
         // --- CONFIGURATION ---
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyF_RWhcxaPU_IblvklPLCwC0OvHVe_nHXV9PY5JNPPzY_oWpM8Yde90vfzLm47PGoEoQ/exec";  //"ใส่_Web_App_URL_จาก_GAS_ที่นี่"; 
-        const LIFF_ID = "2009018471-CcXarzPR";      //"ใส่_LIFF_ID_จาก_LINE_Console_ที่นี่";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyF_RWhcxaPU_IblvklPLCwC0OvHVe_nHXV9PY5JNPPzY_oWpM8Yde90vfzLm47PGoEoQ/exec"; 
+        const LIFF_ID = "2009018471-CcXarzPR";
         const FIX_RATE = 4;
 
         const Icons = {
             Car: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>,
             Check: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
-            Loader: (props) => <svg {...props} className={props.className + " animate-spin"} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            Loader: (props) => <svg {...props} className={props.className + " animate-spin"} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            Image: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         };
 
         const App = () => {
@@ -66,6 +69,16 @@
             const mileageAmount = Number(formData.distance_km) * FIX_RATE;
             const totalAmount = mileageAmount + Number(formData.toll_fee) + Number(formData.parking_fee);
 
+            const handleFileChange = (e) => {
+                const file = e.target.files[0];
+                if (file && file.size <= 5 * 1024 * 1024) {
+                    setSelectedFile(file);
+                } else if (file) {
+                    alert("ไฟล์ต้องมีขนาดไม่เกิน 5MB");
+                    e.target.value = null;
+                }
+            };
+
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 setLoading(true);
@@ -91,21 +104,25 @@
                 };
 
                 try {
-                    const res = await fetch(GAS_URL, {
+                    // ใช้ mode: 'no-cors' สำหรับการส่งข้อมูลไปยัง Google Apps Script
+                    await fetch(GAS_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // สำคัญมากสำหรับ GAS redirect
+                        mode: 'no-cors', 
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     
+                    // เนื่องจาก no-cors ไม่สามารถอ่านค่า response ได้ แต่ถ้าไม่ throw error แสดงว่าส่งสำเร็จ
                     setLastSummary(payload);
                     setIsSuccess(true);
                 } catch (err) {
-                    alert("เกิดข้อผิดพลาด: " + err.message);
+                    alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + err.message);
                 } finally {
                     setLoading(false);
                 }
             };
 
+            // ส่วนแสดงผลหน้าสรุปหลังจากบันทึกสำเร็จ
             if (isSuccess) {
                 return (
                     <div className="p-6 max-w-md mx-auto animate-fadeIn">
@@ -117,27 +134,27 @@
                             <p className="text-slate-500 text-sm mb-6">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
                             
                             <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-3 mb-6">
-                                <p className="text-xs text-slate-400 font-bold uppercase">สรุปรายการเบิก</p>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-sm text-slate-600">ผู้เบิก:</span>
-                                    <span className="text-sm font-bold">{lastSummary.requester_name}</span>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">สรุปรายการเบิก</p>
+                                <div className="flex justify-between border-b border-slate-200 pb-2">
+                                    <span className="text-sm text-slate-500">ผู้เบิก:</span>
+                                    <span className="text-sm font-bold text-slate-700">{lastSummary.requester_name}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-sm text-slate-600">จุดหมาย:</span>
-                                    <span className="text-sm font-bold">{lastSummary.site_name}</span>
+                                <div className="flex justify-between border-b border-slate-200 pb-2">
+                                    <span className="text-sm text-slate-500">ปลายทาง:</span>
+                                    <span className="text-sm font-bold text-slate-700">{lastSummary.site_name}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-sm text-slate-600">ระยะทาง:</span>
-                                    <span className="text-sm font-bold">{lastSummary.distance_km} กม.</span>
+                                <div className="flex justify-between border-b border-slate-200 pb-2">
+                                    <span className="text-sm text-slate-500">ระยะทาง:</span>
+                                    <span className="text-sm font-bold text-slate-700">{lastSummary.distance_km} กม.</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-sm text-slate-600">ยอดเงินรวม:</span>
-                                    <span className="text-lg font-black text-blue-600">{lastSummary.total_amount.toLocaleString()} ฿</span>
+                                <div className="flex justify-between pt-1">
+                                    <span className="text-sm text-slate-500 font-bold">ยอดเงินรวม:</span>
+                                    <span className="text-xl font-black text-blue-600">{lastSummary.total_amount.toLocaleString()} ฿</span>
                                 </div>
                             </div>
 
-                            <button onClick={() => window.location.reload()} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold shadow-lg">บันทึกเพิ่มอีก</button>
-                            <button onClick={() => liff.closeWindow()} className="w-full mt-3 py-3 text-slate-400 font-medium">ปิดหน้าต่าง</button>
+                            <button onClick={() => window.location.reload()} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all">บันทึกเพิ่มอีก</button>
+                            <button onClick={() => liff.closeWindow()} className="w-full mt-4 py-2 text-slate-400 font-medium text-sm">ปิดหน้าต่าง</button>
                         </div>
                     </div>
                 );
@@ -145,65 +162,98 @@
 
             return (
                 <div className="py-4 px-3 max-w-md mx-auto">
-                    <div className="bg-white rounded-2xl shadow-lg border-b p-4 flex items-center gap-3 mb-4">
+                    <div className="bg-white rounded-2xl shadow-md border-b p-4 flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
                             <Icons.Car className="w-6 h-6" />
                         </div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-800 leading-none">เบิกค่าเดินทาง</h1>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">LINE LIFF Edition</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">LINE LIFF System</span>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl p-5 space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-4">
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">ชื่อผู้ขอเบิก (ดึงจาก LINE)</label>
                                 <input type="text" readOnly value={formData.requester_name} className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-bold outline-none" />
                             </div>
+                            
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">วันที่</label>
-                                    <input type="date" value={formData.request_date} onChange={e => setFormData({...formData, request_date: e.target.value})} className="w-full p-2 border rounded-lg text-sm" />
+                                    <input type="date" value={formData.request_date} onChange={e => setFormData({...formData, request_date: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-sm" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">ทีม / ฝ่าย</label>
-                                    <input type="text" value={formData.team_name} onChange={e => setFormData({...formData, team_name: e.target.value})} className="w-full p-2 border rounded-lg text-sm" placeholder="ระบุทีม" />
+                                    <input type="text" value={formData.team_name} onChange={e => setFormData({...formData, team_name: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-sm" placeholder="ระบุทีม" />
                                 </div>
                             </div>
+
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">Site งาน / ปลายทาง</label>
-                                <input type="text" value={formData.site_name} onChange={e => setFormData({...formData, site_name: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm" placeholder="ไปที่ไหน?" required />
+                                <input type="text" value={formData.site_name} onChange={e => setFormData({...formData, site_name: e.target.value})} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm" placeholder="ไปที่ไหน?" required />
                             </div>
+
                             <div className="grid grid-cols-2 gap-3">
-                                <input type="text" placeholder="ต้นทาง" value={formData.origin} onChange={e => setFormData({...formData, origin: e.target.value})} className="p-2 border rounded-lg text-xs" required />
-                                <input type="text" placeholder="ปลายทาง" value={formData.destination} onChange={e => setFormData({...formData, destination: e.target.value})} className="p-2 border rounded-lg text-xs" required />
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">จาก (ต้นทาง)</label>
+                                    <input type="text" placeholder="ระบุต้นทาง" value={formData.origin} onChange={e => setFormData({...formData, origin: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-xs" required />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">ถึง (ปลายทาง)</label>
+                                    <input type="text" placeholder="ระบุปลายทาง" value={formData.destination} onChange={e => setFormData({...formData, destination: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-xs" required />
+                                </div>
                             </div>
-                            <textarea placeholder="เหตุผล / รายละเอียดการเดินทาง" rows="2" value={formData.travel_details} onChange={e => setFormData({...formData, travel_details: e.target.value})} className="w-full p-2 border rounded-lg text-sm bg-slate-50" required></textarea>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">รายละเอียดการเดินทาง</label>
+                                <textarea placeholder="ไปทำอะไร?" rows="2" value={formData.travel_details} onChange={e => setFormData({...formData, travel_details: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-sm bg-slate-50" required></textarea>
+                            </div>
+
+                            {/* เพิ่มส่วนอัปโหลดรูปกลับคืนมา */}
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">แนบรูปภาพ (ถ้ามี)</label>
+                                <div className="relative">
+                                    <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="file-input" />
+                                    <label htmlFor="file-input" className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-all text-slate-500 text-sm">
+                                        <Icons.Image className="w-5 h-5" />
+                                        {selectedFile ? <span className="text-blue-600 font-bold truncate max-w-[150px]">{selectedFile.name}</span> : 'เลือกรูปภาพ...'}
+                                    </label>
+                                </div>
+                            </div>
                             
-                            <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 grid grid-cols-2 gap-2">
-                                <div className="col-span-2">
-                                    <select value={formData.trip_type} onChange={e => setFormData({...formData, trip_type: e.target.value})} className="w-full p-2 bg-white border border-blue-200 rounded-lg text-xs font-bold">
-                                        <option>เที่ยวเดียว</option><option>ไปกลับ</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-[9px] font-bold text-blue-800">กม.</label>
-                                    <input type="number" value={formData.distance_km} onChange={e => setFormData({...formData, distance_km: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center font-bold" />
-                                </div>
-                                <div>
-                                    <label className="text-[9px] font-bold text-blue-800">ทางด่วน/ที่จอด (฿)</label>
-                                    <input type="number" onChange={e => setFormData({...formData, toll_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
+                            <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 space-y-3">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="col-span-2">
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ประเภทการเดินทาง</label>
+                                        <select value={formData.trip_type} onChange={e => setFormData({...formData, trip_type: e.target.value})} className="w-full p-2 bg-white border border-blue-200 rounded-lg text-xs font-bold">
+                                            <option>เที่ยวเดียว</option><option>ไปกลับ</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ระยะทาง (กม.)</label>
+                                        <input type="number" value={formData.distance_km} onChange={e => setFormData({...formData, distance_km: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center font-bold" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่าทางด่วน (฿)</label>
+                                        <input type="number" value={formData.toll_fee} onChange={e => setFormData({...formData, toll_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
+                                    </div>
+                                    {/* เพิ่มช่องค่าจอดรถกลับมา */}
+                                    <div className="col-span-2">
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่าที่จอดรถ (฿)</label>
+                                        <input type="number" value={formData.parking_fee} onChange={e => setFormData({...formData, parking_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="pt-2">
-                            <div className="bg-blue-600 rounded-xl p-4 text-white mb-4 flex justify-between items-center">
-                                <div className="text-xs opacity-80">ยอดเบิกสุทธิ</div>
-                                <div className="text-2xl font-black">{totalAmount.toLocaleString()} ฿</div>
+                            <div className="bg-blue-600 rounded-2xl p-4 text-white mb-4 flex justify-between items-center shadow-lg border border-white/20">
+                                <div className="text-xs opacity-80 font-bold uppercase tracking-widest">ยอดเบิกสุทธิ</div>
+                                <div className="text-3xl font-black tracking-tight">{totalAmount.toLocaleString()} ฿</div>
                             </div>
-                            <button type="submit" disabled={loading || totalAmount <= 0} className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all ${loading ? 'bg-slate-300' : 'bg-slate-800 text-white active:scale-95'}`}>
+                            <button type="submit" disabled={loading || totalAmount <= 0} className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 transition-all ${loading ? 'bg-slate-300' : 'bg-slate-800 text-white active:scale-95'}`}>
                                 {loading ? <Icons.Loader className="w-6 h-6" /> : 'บันทึกข้อมูล'}
                             </button>
                         </div>
