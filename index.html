@@ -125,30 +125,56 @@
             // ส่วนแสดงผลหน้าสรุปหลังจากบันทึกสำเร็จ
             if (isSuccess) {
                 return (
-                    <div className="p-6 max-w-md mx-auto animate-fadeIn">
-                        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-t-8 border-green-500">
-                            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Icons.Check className="w-12 h-12" />
+                    <div className="p-4 max-w-md mx-auto animate-fadeIn">
+                        <div className="bg-white rounded-3xl shadow-xl p-6 text-center border-t-8 border-green-500">
+                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Icons.Check className="w-10 h-10" />
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">บันทึกสำเร็จ!</h2>
-                            <p className="text-slate-500 text-sm mb-6">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
+                            <h2 className="text-xl font-bold text-slate-800 mb-1">บันทึกสำเร็จ!</h2>
+                            <p className="text-slate-500 text-xs mb-4">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
                             
-                            <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-3 mb-6">
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">สรุปรายการเบิก</p>
-                                <div className="flex justify-between border-b border-slate-200 pb-2">
-                                    <span className="text-sm text-slate-500">ผู้เบิก:</span>
-                                    <span className="text-sm font-bold text-slate-700">{lastSummary.requester_name}</span>
+                            <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-2 mb-5">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest border-b border-slate-200 pb-1 mb-2">ข้อมูลการเบิก</p>
+                                
+                                <div className="flex justify-between items-start gap-2">
+                                    <span className="text-xs text-slate-500 shrink-0">ผู้เบิก:</span>
+                                    <span className="text-xs font-bold text-slate-700 text-right">{lastSummary.requester_name}</span>
                                 </div>
-                                <div className="flex justify-between border-b border-slate-200 pb-2">
-                                    <span className="text-sm text-slate-500">ปลายทาง:</span>
-                                    <span className="text-sm font-bold text-slate-700">{lastSummary.site_name}</span>
+
+                                <div className="flex justify-between items-start gap-2">
+                                    <span className="text-xs text-slate-500 shrink-0">วันที่:</span>
+                                    <span className="text-xs font-bold text-slate-700 text-right">{lastSummary.request_date}</span>
                                 </div>
-                                <div className="flex justify-between border-b border-slate-200 pb-2">
-                                    <span className="text-sm text-slate-500">ระยะทาง:</span>
-                                    <span className="text-sm font-bold text-slate-700">{lastSummary.distance_km} กม.</span>
+
+                                <div className="flex justify-between items-start gap-2">
+                                    <span className="text-xs text-slate-500 shrink-0">Site งาน:</span>
+                                    <span className="text-xs font-bold text-slate-700 text-right">{lastSummary.site_name}</span>
                                 </div>
-                                <div className="flex justify-between pt-1">
-                                    <span className="text-sm text-slate-500 font-bold">ยอดเงินรวม:</span>
+
+                                <div className="flex flex-col gap-1 pt-1">
+                                    <span className="text-xs text-slate-500">รายละเอียด:</span>
+                                    <span className="text-xs font-medium text-slate-600 bg-white p-2 rounded-lg border border-slate-100 italic">
+                                        {lastSummary.travel_details}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2 border-t border-slate-200">
+                                    <div className="flex justify-between">
+                                        <span className="text-[11px] text-slate-500">ระยะทาง:</span>
+                                        <span className="text-[11px] font-bold text-slate-700">{lastSummary.distance_km} กม.</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[11px] text-slate-500">ค่าทางด่วน:</span>
+                                        <span className="text-[11px] font-bold text-slate-700">{Number(lastSummary.toll_fee).toLocaleString()} ฿</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[11px] text-slate-500">ค่าที่จอดรถ:</span>
+                                        <span className="text-[11px] font-bold text-slate-700">{Number(lastSummary.parking_fee).toLocaleString()} ฿</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between pt-2 border-t border-slate-200 items-center">
+                                    <span className="text-xs text-slate-500 font-bold">รวมยอดขอเบิกสุทธิ:</span>
                                     <span className="text-xl font-black text-blue-600">{lastSummary.total_amount.toLocaleString()} ฿</span>
                                 </div>
                             </div>
@@ -211,7 +237,7 @@
                                 <textarea placeholder="ไปทำอะไร?" rows="2" value={formData.travel_details} onChange={e => setFormData({...formData, travel_details: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-sm bg-slate-50" required></textarea>
                             </div>
 
-                            {/* เพิ่มส่วนอัปโหลดรูปกลับคืนมา */}
+                            {/* ส่วนอัปโหลดรูปภาพ (ไม่บังคับ) */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">แนบรูปภาพ (ถ้ามี)</label>
                                 <div className="relative">
@@ -239,7 +265,6 @@
                                         <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่าทางด่วน (฿)</label>
                                         <input type="number" value={formData.toll_fee} onChange={e => setFormData({...formData, toll_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
                                     </div>
-                                    {/* เพิ่มช่องค่าจอดรถกลับมา */}
                                     <div className="col-span-2">
                                         <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่าที่จอดรถ (฿)</label>
                                         <input type="number" value={formData.parking_fee} onChange={e => setFormData({...formData, parking_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
