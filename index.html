@@ -38,7 +38,8 @@
                 request_date: new Date().toISOString().split('T')[0],
                 requester_name: 'กำลังโหลด...', team_name: '', site_name: '', travel_details: '',
                 origin: '', destination: '', trip_type: 'เที่ยวเดียว',
-                distance_km: 0, toll_fee: 0, parking_fee: 0
+                distance_km: 0, toll_fee: 0, parking_fee: 0,
+                line_user_id: '' // [แก้ไขเพิ่ม] เก็บ LINE User ID
             });
             const [selectedFile, setSelectedFile] = useState(null);
             const [loading, setLoading] = useState(false);
@@ -49,7 +50,12 @@
                         await liff.init({ liffId: LIFF_ID });
                         if (liff.isLoggedIn()) {
                             const profile = await liff.getProfile();
-                            setFormData(prev => ({ ...prev, requester_name: profile.displayName }));
+                            // [แก้ไขเพิ่ม] ดึงทั้งชื่อและ User ID มาเก็บไว้ใน State
+                            setFormData(prev => ({ 
+                                ...prev, 
+                                requester_name: profile.displayName,
+                                line_user_id: profile.userId
+                            }));
                         } else {
                             liff.login();
                         }
