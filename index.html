@@ -166,7 +166,8 @@
                             {/* ข้อมูลผู้เบิก ดึงจาก LINE Profile */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">ชื่อผู้ขอเบิก (ดึงจาก LINE)</label>
-                                <input type="text" value={formData.requester_name} className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 font-bold outline-none" />
+                                <input type="text"  value={formData.requester_name} onChange={(e) => setFormData({...formData, requester_name: e.target.value})} className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-slate-600 font-bold outline-none" />
+
                             </div>
                             
                             <div className="grid grid-cols-2 gap-3">
@@ -258,4 +259,5 @@
 </body>
 
 </html>
+
 
