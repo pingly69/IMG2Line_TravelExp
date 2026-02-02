@@ -41,12 +41,11 @@
         };
 
         const App = () => {
-            // ดึงวันที่ปัจจุบันในรูปแบบ YYYY-MM-DD สำหรับจำกัดการเลือกวันที่
             const todayStr = new Date().toISOString().split('T')[0];
 
             const [formData, setFormData] = useState({
                 request_date: todayStr,
-                license_plate: '', // [เพิ่ม] เลขทะเบียนรถ
+                license_plate: '', 
                 requester_name: 'กำลังโหลด...', 
                 team_name: '', 
                 site_name: '', 
@@ -57,7 +56,7 @@
                 distance_km: 0, 
                 toll_fee: 0, 
                 parking_fee: 0,
-                has_delivery: false, // [เพิ่ม] สถานะปุ่มเปิด/ปิดค่าขนวัสดุ
+                has_delivery: false, 
                 line_user_id: '' 
             });
             const [selectedFile, setSelectedFile] = useState(null);
@@ -79,15 +78,14 @@
                         }
                     } catch (err) {
                         console.error("LIFF Init Error:", err);
-                        setFormData(prev => ({ ...prev, requester_name: "" })); // หาก error ให้เป็นค่าว่างเพื่อให้พิมพ์เอง
+                        setFormData(prev => ({ ...prev, requester_name: "" }));
                     }
                 };
                 initLiff();
             }, []);
 
-            // คำนวณยอดเงิน
             const mileageAmount = Number(formData.distance_km) * FIX_RATE;
-            const deliveryFee = formData.has_delivery ? DELIVERY_FIX_RATE : 0; // [เพิ่ม] คำนวณค่าขนวัสดุ
+            const deliveryFee = formData.has_delivery ? DELIVERY_FIX_RATE : 0;
             const totalAmount = mileageAmount + Number(formData.toll_fee) + Number(formData.parking_fee) + deliveryFee;
 
             const handleFileChange = (e) => {
@@ -103,13 +101,11 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
 
-                // Validation: ตรวจสอบเลขทะเบียนรถ
                 if (!formData.license_plate.trim()) {
                     alert("กรุณากรอกเลขทะเบียนรถ");
                     return;
                 }
                 
-                // Validation: ตรวจสอบชื่อผู้ขอเบิก
                 if (!formData.requester_name.trim() || formData.requester_name === 'กำลังโหลด...') {
                     alert("กรุณากรอกชื่อผู้ขอเบิก");
                     return;
@@ -131,7 +127,7 @@
 
                 const payload = {
                     ...formData,
-                    delivery_fee: deliveryFee, // [เพิ่ม] ส่งค่าขนวัสดุ
+                    delivery_fee: deliveryFee,
                     mileage_amount: mileageAmount,
                     total_amount: totalAmount,
                     update_datetime: new Date().toLocaleString('th-TH'),
@@ -147,6 +143,7 @@
                     });
                     
                     if (liff.isInClient()) {
+                        // [แก้ไข] คืนค่ารายละเอียด ค่าทางด่วน และค่ารถ/ทีจอด กลับมาในข้อความสรุป
                         const summaryText = 
                             `✅ บันทึกเบิกค่าเดินทางสำเร็จ\n` +
                             `━━━━━━━━━━━━━━\n` +
@@ -154,7 +151,10 @@
                             `🚗 ทะเบียน: ${payload.license_plate}\n` +
                             `📅 วันที่: ${payload.request_date}\n` +
                             `📍 Site งาน: ${payload.site_name}\n` +
+                            `📝 รายละเอียด: ${payload.travel_details}\n` +
                             `🛣️ ระยะทาง: ${payload.distance_km} กม.\n` +
+                            `🎫 ค่าทางด่วน: ${payload.toll_fee} ฿\n` +
+                            `🅿️ ค่ารถ/ที่จอด: ${payload.parking_fee} ฿\n` +
                             `📦 ค่าขนวัสดุ: ${deliveryFee} ฿\n` +
                             `━━━━━━━━━━━━━━\n` +
                             `💰 ยอดสุทธิ: ${payload.total_amount.toLocaleString()} ฿`;
@@ -179,7 +179,6 @@
 
             return (
                 <div className="py-4 px-3 max-w-md mx-auto">
-                    {/* Header Section */}
                     <div className="bg-white rounded-2xl shadow-md border-b p-4 flex items-center gap-3 mb-4 border-l-4 border-l-blue-600">
                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
                             <Icons.Car className="w-6 h-6" />
@@ -192,7 +191,6 @@
 
                     <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl p-5 space-y-4 border border-slate-100">
                         <div className="space-y-4">
-                            {/* Requester Name (Editable) */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">ชื่อผู้ขอเบิก (แก้ไขได้)</label>
                                 <input 
@@ -210,7 +208,7 @@
                                     <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">วันที่ขอเบิก</label>
                                     <input 
                                         type="date" 
-                                        max={todayStr} // [แก้ไข] กำหนดไม่ให้เกินปัจจุบัน
+                                        max={todayStr} 
                                         value={formData.request_date} 
                                         onChange={e => setFormData({...formData, request_date: e.target.value})} 
                                         className="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
@@ -221,12 +219,12 @@
                                     <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">เลขทะเบียนรถ</label>
                                     <input 
                                         type="text" 
-                                        maxLength="20" // [เพิ่ม] จำกัด 20 ตัวอักษร
+                                        maxLength="20" 
                                         value={formData.license_plate} 
                                         onChange={e => setFormData({...formData, license_plate: e.target.value})} 
                                         className="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-slate-300" 
                                         placeholder="กข 1234"
-                                        required // [เพิ่ม] บังคับกรอก
+                                        required 
                                     />
                                 </div>
                             </div>
@@ -257,7 +255,6 @@
                                 <textarea placeholder="เดินทางไปทำอะไร..." rows="2" value={formData.travel_details} onChange={e => setFormData({...formData, travel_details: e.target.value})} className="w-full p-2 border border-slate-200 rounded-lg text-sm bg-slate-50" required></textarea>
                             </div>
 
-                            {/* Image Upload */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">แนบรูปภาพประกอบ</label>
                                 <div className="relative">
@@ -269,7 +266,6 @@
                                 </div>
                             </div>
                             
-                            {/* ส่วนคำนวณเงินและค่าใช้จ่ายเพิ่มเติม */}
                             <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
@@ -291,7 +287,6 @@
                                         <input type="number" value={formData.parking_fee} onChange={e => setFormData({...formData, parking_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
                                     </div>
                                     
-                                    {/* [เพิ่ม] ปุ่ม Toggle สำหรับค่าขนวัสดุ */}
                                     <div className="flex flex-col justify-end">
                                         <label className="text-[9px] font-bold text-blue-800 uppercase mb-2 block">ค่าขนวัสดุ (150฿)</label>
                                         <div className="flex items-center">
@@ -317,7 +312,6 @@
                             </div>
                         </div>
 
-                        {/* ยอดรวมสุทธิและปุ่มบันทึก */}
                         <div className="pt-2">
                             <div className="bg-blue-600 rounded-2xl p-4 text-white mb-4 flex justify-between items-center shadow-lg border border-white/20">
                                 <div className="text-xs opacity-80 font-bold uppercase tracking-widest flex items-center gap-1">
@@ -343,5 +337,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
