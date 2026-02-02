@@ -31,7 +31,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbyMm_Qj6JgkIYLwx-U9jVxUIFk51Zs0NBCmNWl1N_0rhwbAnsMs9qVXfpzArEh6c0SYEw/exec"; 
         const LIFF_ID = "2009018471-CcXarzPR";
         const FIX_RATE = 4;
-        const DELIVERY_FIX_RATE = 150; // [เพิ่ม] ค่าขนวัสดุ Fix ที่ 150 บาท
+        const DELIVERY_FIX_RATE = 150; // [เพิ่ม] ค่ารถ Fix ที่ 150 บาท
 
         const Icons = {
             Car: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>,
@@ -154,8 +154,8 @@
                             `📝 รายละเอียด: ${payload.travel_details}\n` +
                             `🛣️ ระยะทาง: ${payload.distance_km} กม.\n` +
                             `🎫 ค่าทางด่วน: ${payload.toll_fee} ฿\n` +
-                            `🅿️ ค่ารถ/ที่จอด: ${payload.parking_fee} ฿\n` +
-                            `📦 ค่าขนวัสดุ: ${deliveryFee} ฿\n` +
+                            `🅿️ ค่าที่จอด: ${payload.parking_fee} ฿\n` +
+                            `📦 ค่ารถ: ${deliveryFee} ฿\n` +
                             `━━━━━━━━━━━━━━\n` +
                             `💰 ยอดสุทธิ: ${payload.total_amount.toLocaleString()} ฿`;
 
@@ -283,12 +283,12 @@
                                         <input type="number" value={formData.toll_fee} onChange={e => setFormData({...formData, toll_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
                                     </div>
                                     <div>
-                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่ารถ/ที่จอดรถ (฿)</label>
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-1 block">ค่าที่จอด (฿)</label>
                                         <input type="number" value={formData.parking_fee} onChange={e => setFormData({...formData, parking_fee: e.target.value})} className="w-full p-2 border border-blue-200 rounded-lg text-center" placeholder="0" />
                                     </div>
                                     
                                     <div className="flex flex-col justify-end">
-                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-2 block">ค่าขนวัสดุ (150฿)</label>
+                                        <label className="text-[9px] font-bold text-blue-800 uppercase mb-2 block">ค่ารถ (150฿)</label>
                                         <div className="flex items-center">
                                             <label htmlFor="toggle-delivery" className="flex items-center cursor-pointer">
                                                 <div className="relative">
